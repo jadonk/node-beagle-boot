@@ -1,4 +1,4 @@
-# node-beagle-boot  [![Build Status](https://travis-ci.org/ravikp7/node-beagle-boot.svg?branch=master)](https://travis-ci.org/jadonk/node-beagle-boot)
+# node-beagle-boot  [![Build Status](https://travis-ci.org/jadonk/node-beagle-boot.svg?branch=test-travis)](https://travis-ci.org/jadonk/node-beagle-boot)
 #### Project status: UNDER DEVELOPMENT
 A node.js bootloader server running over usb connection for BeagleBone hardware which can boot it into usb mass storage mode utilising the uboot's ums feature for flashing purposes.
 
