@@ -4,10 +4,11 @@
   "description": "A bootloader server for BeagleBone hardware to boot it into mass storage mode",
   "main": "main.js",
   "dependencies": {
-    "usb": "1.2.0",
     "binary-parser": "1.1.5",
+    "endian-toggle": "0.0.0",
+    "json-stringify-safe": "5.0.1",
     "schemapack": "1.4.2",
-    "endian-toggle": "0.0.0"
+    "usb": "1.2.0"
   },
   "devDependencies": {
     "jshint": "2.9.5"

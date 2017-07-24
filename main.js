@@ -36,6 +36,7 @@ var emitter = new EventEmitter();
 var fs = require('fs');
 var path = require('path');
 var os = require('os');
+var stringify = require('json-stringify-safe');
 var platform = os.platform();
 var rndis_win = require('./src/rndis_win');
 var inEndpoint, outEndpoint, data, ether, rndis, eth2, ip, udp, bootreply;
@@ -50,12 +51,13 @@ exports.usbMassStorage = function(){
     
     // Connect to BeagleBone
     usb.on('attach', function(device){
+        emitterMod.emit('progress', {"description": "Connected to " + JSON.stringify(device), "complete": 0});
 
         if(device === usb.findByIds(ROMVID, ROMPID))
             emitter.emit('init', 'spl', device, 0x02);
 
         if(device === usb.findByIds(SPLVID, SPLPID))
-            setTimeout(()=>{emitter.emit('init', 'uboot', device, 0x01);}, 1000);
+            setTimeout(()=>{emitter.emit('init', 'uboot', device, 0x01);}, 2000);
 
         if(device === usb.findByIds(UMSVID, UMSPID))
             emitterMod.emit('progress', {description: 'Ready for Flashing!', complete: 100});
@@ -74,8 +76,29 @@ emitter.on('init', function(file, device, outEnd){
     emitterMod.emit('progress', {description: description, complete: percent});
     percent += 5;
 
-    device.open();
+    if(platform == 'darwin' && file == 'uboot') {
+        device.open(false);
+        device.setConfiguration(2, function(error) {
+            console.log("setConfiguration error: " + error);
+            console.log("configDescriptor = " + stringify(device.configDescriptor));
+            console.log("interfaces = " + stringify(device.interfaces));
+            device.getStringDescriptor(device.configDescriptor.iConfiguration,
+                function(error, data) {
+                    console.log("iConfiguration = " + data);
+                }
+            );
+            onOpen(file, device, outEnd);
+        });
+        device.__open();
+    } else {
+        device.open();
+        onOpen(file, device, outEnd);
+    }
+});
+
+function onOpen(file, device, outEnd) {
     var interface = device.interface(1);    // Select interface 1 for BULK transfers
+    console.log("interface = " + stringify(interface));
 
     windows = 0;
     if(platform == 'win32') windows = 1; 
@@ -99,7 +122,7 @@ emitter.on('init', function(file, device, outEnd){
     emitterMod.emit('progress', {description: description, complete: percent});
     percent += 5;
 
-    // Code to initialize RNDIS device on Windows and OSX
+    // Code to initialize RNDIS device on Windows
     if(platform != 'linux'){
         var intf0 = device.interface(0);    // Select interface 0 for CONTROL transfer
         intf0.claim();
@@ -144,7 +167,7 @@ emitter.on('init', function(file, device, outEnd){
             console.log(data);
         });
 
-    }                      
+    }
 
     // Set endpoints for usb transfer
     inEndpoint = interface.endpoint(0x81);
@@ -155,7 +178,7 @@ emitter.on('init', function(file, device, outEnd){
     outEndpoint.transferType = usb.LIBUSB_TRANSFER_TYPE_BULK;
 
     emitter.emit('getBOOTP', file);
-});
+};
 
 
 
