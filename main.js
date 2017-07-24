@@ -54,10 +54,10 @@ exports.usbMassStorage = function(){
         emitterMod.emit('progress', {"description": "Connected to " + JSON.stringify(device), "complete": 0});
 
         if(device === usb.findByIds(ROMVID, ROMPID))
-            emitter.emit('init', 'spl', device, 0x02);
+            transfer('spl', device, 0x02);
 
         if(device === usb.findByIds(SPLVID, SPLPID))
-            setTimeout(()=>{emitter.emit('init', 'uboot', device, 0x01);}, 2000);
+            setTimeout(()=>{ transfer('uboot', device, 0x01); }, 1000);
 
         if(device === usb.findByIds(UMSVID, UMSPID))
             emitterMod.emit('progress', {description: 'Ready for Flashing!', complete: 100});
@@ -67,16 +67,15 @@ exports.usbMassStorage = function(){
 };
 
 
-// Event for device initialization
-emitter.on('init', function(file, device, outEnd){
-
+// Function for device initialization
+function transfer(file, device, outEnd){
     if(file === 'spl') percent = 0;
 
     description = file+" =>";
     emitterMod.emit('progress', {description: description, complete: percent});
     percent += 5;
 
-    if(platform == 'darwin' && file == 'uboot') {
+    if(file == 'uboot' && platform != 'linux'){
         device.open(false);
         device.setConfiguration(2, function(error) {
             console.log("setConfiguration error: " + error);
@@ -87,14 +86,15 @@ emitter.on('init', function(file, device, outEnd){
                     console.log("iConfiguration = " + data);
                 }
             );
+            _device.__open();
+            _device.__claimInterface(0);
             onOpen(file, device, outEnd);
         });
-        device.__open();
     } else {
         device.open();
         onOpen(file, device, outEnd);
     }
-});
+}
 
 function onOpen(file, device, outEnd) {
     var interface = device.interface(1);    // Select interface 1 for BULK transfers
@@ -122,8 +122,8 @@ function onOpen(file, device, outEnd) {
     emitterMod.emit('progress', {description: description, complete: percent});
     percent += 5;
 
-    // Code to initialize RNDIS device on Windows
-    if(platform != 'linux'){
+    // Code to initialize RNDIS device on Windows and OSX
+    if(platform != 'linux' && file == 'spl'){
         var intf0 = device.interface(0);    // Select interface 0 for CONTROL transfer
         intf0.claim();
 
@@ -178,7 +178,7 @@ function onOpen(file, device, outEnd) {
     outEndpoint.transferType = usb.LIBUSB_TRANSFER_TYPE_BULK;
 
     emitter.emit('getBOOTP', file);
-};
+}
 
 
 
@@ -384,15 +384,10 @@ emitter.on('sendFile', function(file){
                 
             }
 
-            emitter.emit('transfer-done', file);
+            description = file+" transfer complete";
+            emitterMod.emit('progress', {description: description, complete: percent});
+            percent += 5;
         }
         else emitterMod.emit('error', "Error reading "+file+" : "+error);
     });
-
-});
-
-emitter.on('transfer-done', function(file){
-    description = file+" transfer complete";
-    emitterMod.emit('progress', {description: description, complete: percent});
-    percent += 5;
 });
