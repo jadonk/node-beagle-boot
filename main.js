@@ -86,8 +86,8 @@ function transfer(file, device, outEnd){
                     console.log("iConfiguration = " + data);
                 }
             );
-            _device.__open();
-            _device.__claimInterface(0);
+            device.__open();
+            device.__claimInterface(0);
             onOpen(file, device, outEnd);
         });
     } else {
