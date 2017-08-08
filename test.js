@@ -2,23 +2,23 @@ var BB = require('./main');
 
 var emitter = BB.usbMassStorage();
 
-console.log('Server started');
-console.log('Connect BeagleBone to get started');
+console.log('USB tester and EEPROM writer started');
+console.log('Connect board via USB');
 
 emitter.on('progress', function(status){
-    console.log(status);
+    //console.log(status);
 });
 
 emitter.on('done', function(){
-    console.log('Transfer Complete');
+    console.log('Program load completed');
 });
 
 emitter.on('error', function(error){
-    console.log('Error: '+error);
+    //console.log('Error: '+error);
 });
 
 emitter.on('connect', function(device){
-    if(device === 'UMS') console.log('Ready for Flashing!');
+    if(device === 'UMS') console.log('Ready');
 });
 
 /*

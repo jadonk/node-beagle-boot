@@ -84,7 +84,7 @@ exports.tftpServer = function(transferFiles){
         transferFiles.forEach(function(entry){
 
             if(device === usb.findByIds(entry.vid, entry.pid)){ 
-                var timeout = (foundDevice == 'ROM')? 0: 500;
+                var timeout = (foundDevice == 'ROM')? 0: 100;
                 setTimeout(()=>{transfer(entry.file_path, device, foundDevice);}, timeout);
             }   
         });

@@ -1,3 +1,4 @@
 testcmd=gpio set 55;run do_test;ums 0 mmc 0
-do_test=run do_debug;gpio set 56
-do_debug=env export -t 82000000;fatwrite mmc 0:1 82000000 env.txt ${filesize};eeprom read 50 82000000 80;fatwrite mmc 0:1 82000000 eeprom.bin 80
+do_test=run do_debugB;gpio set 56
+do_debugA=env export -t 82000000;fatwrite mmc 0:1 82000000 env.txt ${filesize};eeprom read 0 50 82000000 0 200;fatwrite mmc 0:1 82000000 eepromA.bin 200
+do_debugB=fatload mmc 0:1 82000000 eeprom.bin ${filesize};eeprom write 0 50 82000000 0 20;run do_debugA
