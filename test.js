@@ -26,9 +26,10 @@ emitter.on('error', function(error){
 
 emitter.on('connect', function(device){
     console.log("Detected " +device);
+    if(device == 'UMS') doScan();
 });
 
-fs.watch(umsMountPoint, {recursive: true}, onMountChange);
+fs.watch(umsMountPoint, onMountChange);
 
 function onMountChange(eventType, filename) {
     console.log(eventType + ' ' + filename);
@@ -36,16 +37,22 @@ function onMountChange(eventType, filename) {
     if(eventType == 'rename') doReadback();
 }
 
+function doScan() {
+    var volumes = fs.readdirSync(umsMountPoint);
+    console.log('volumes = ' + volumes);
+}
+
 function doReadback() {
+    var envTxt = umsMountPoint+umsVolume+'/env.txt';
+    var eepromBin = umsMountPoint+umsVolume+'/eeprom.bin';
+
     try {
-        var envTxt = umsMountPoint+umsVolume+'/env.txt';
         var env = fs.readFileSync(envTxt, 'utf8');
         console.log('env = ' + env);
 
-        var eepromBin = umsMountPoint+umsVolume+'/eeprom.bin';
         var eeprom = fs.readFileSync(eepromBin);
         console.log('eeprom = ' + eeprom);
     } catch(ex) {
-        //console.log(envTxt + ' unavailable');
+        console.log(envTxt + ' unavailable');
     }
 }
