@@ -1,0 +1,2 @@
+bootcmd=gpio clear 53;gpio clear 54;gpio set 55;gpio set 56;ums 0 mmc 0
+bootdelay=0

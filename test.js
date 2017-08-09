@@ -9,7 +9,7 @@ console.log('USB tester and EEPROM writer started');
 console.log('Connect board via USB');
 
 emitter.on('progress', function(status){
-    console.log(status);
+    //console.log(status);
 });
 
 emitter.on('done', function(){
@@ -22,5 +22,6 @@ emitter.on('error', function(error){
 
 emitter.on('connect', function(device){
     console.log("Detected " +device);
+    if(device == "UMS") console.log("Ready");
 });
 
