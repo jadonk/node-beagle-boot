@@ -221,11 +221,11 @@ var bootp = new Parser()
         length: 64
     });
 
-// TFTP packet
+// TFTP RRQ/WRQ packet
 var tftp_Xrq = new Parser()
     .uint16('opcode')
-    .string('filename')
-    .string('mode');
+    .string('filename', {zeroTerminated: true})
+    .string('mode', {zeroTerminated: true});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////// Packet make functions /////////////////////////////////////////////////

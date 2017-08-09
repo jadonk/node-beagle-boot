@@ -1,4 +1,7 @@
-testcmd=gpio set 55;run do_test;ums 0 mmc 0
-do_test=run do_debugB;gpio set 56
+testcmd=gpio set 55;run do_test
+testcmd_bak=gpio set 55;run do_test;ums 0 mmc 0
+do_test=run do_tftpB;gpio set 56
 do_debugA=env export -t 82000000;fatwrite mmc 0:1 82000000 env.txt ${filesize};eeprom read 0 50 82000000 0 200;fatwrite mmc 0:1 82000000 eepromA.bin 200
 do_debugB=fatload mmc 0:1 82000000 eeprom.bin ${filesize};eeprom write 0 50 82000000 0 20;run do_debugA
+do_tftpA=bootp;if tftp 82000000 testscr.txt;env inport -t 82000000;run testscr;fi;gpio clear 53;gpio clear 54
+do_tftpB=setenv ethact usb_ether;setenv serverip 192.168.1.9;setenv ipaddr 192.168.1.3;tftp 82000000 testscr.txt;env import -t 82000000;run testscr

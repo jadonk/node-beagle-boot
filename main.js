@@ -42,6 +42,7 @@ var inEndpoint, outEndpoint, Data, ether, rndis, eth2, ip, udp, bootreply, incre
 const emitterMod = new EventEmitter();    // Emitter for module status
 var percent;    // Percentage for progress
 var description;    // Description for current status
+var udpTFTP;    // TFTP UDP source and destination ports
 
 // Set usb debug log
 //usb.setDebugLevel(4);   
@@ -59,7 +60,7 @@ exports.usbMassStorage = function(){
 exports.tftpServer = function(transferFiles){
 
     var foundDevice;
-    increment = (100 / (transferFiles.length * 9));
+    increment = (100 / (transferFiles.length * 10));
     usb.on('attach', function(device){
 
         switch(device){
@@ -75,7 +76,11 @@ exports.tftpServer = function(transferFiles){
             case usb.findByIds(UMSVID, UMSPID): foundDevice = 'UMS';
             break;
 
-            default: foundDevice = 'Device';
+            default: foundDevice = 'Device '+device.deviceDescriptor;
+/*
+                device.deviceDescriptor.idVendor.toString(16)+':'+
+                device.deviceDescriptor.idProduct.toString(16);
+*/
         }
 
         emitterMod.emit('connect', foundDevice);
@@ -108,7 +113,7 @@ function transfer(filePath, device, foundDevice){
     emitterMod.emit('progress', {description: description, complete: +percent.toFixed(2)});
     percent += increment;
 
-    if(path.basename(filePath) != 'spl' && platform != 'linux'){
+    if(foundDevice == 'SPL' && platform != 'linux'){
         device.open(false);
         device.setConfiguration(2, function(err){if(err) emitterMod.emit('error', "Can't set configuration " +err);});
         device.__open();
@@ -223,9 +228,6 @@ emitter.on('inTransfer', function(filePath){
                 }
 
                 if(request == 'TFTP') {
-                    emitterMod.emit('progress', {description: path.basename(filePath)+" transfer starts", complete: +percent.toFixed(2)});
-                    percent += increment;
-
                     emitter.emit('processTFTP', data, filePath);
                 }
 
@@ -343,11 +345,21 @@ function processARP(data){
 // Function to process TFTP request
 emitter.on('processTFTP', function(data, filePath){
 
-    var udpSPL_buf = Buffer.alloc(udpSize);
+    var udpTFTP_buf = Buffer.alloc(udpSize);
 
-    data.copy(udpSPL_buf, 0, rndisSize + etherSize + ipSize, rndisSize + etherSize + ipSize + udpSize);
+    data.copy(udpTFTP_buf, 0, rndisSize + etherSize + ipSize, rndisSize + etherSize + ipSize + udpSize);
             
-    udpSPL = protocols.parse_udp(udpSPL_buf);           // Received UDP packet for SPL tftp
+    udpTFTP = protocols.parse_udp(udpTFTP_buf);           // Received UDP packet for tftp
+
+    var tftp_buf = Buffer.alloc(udpTFTP.udpLen - udpSize);
+
+    data.copy(tftp_buf, 0, rndisSize + etherSize + ipSize + udpSize, rndisSize + etherSize + ipSize + udpTFTP.udpLen);
+
+    var tftp_req = protocols.parse_tftp(tftp_buf);
+
+    emitterMod.emit('progress', {description: "TFTP transfer starts",
+        opcode: tftp_req.opcode, mode: tftp_req.mode, filename: tftp_req.filename, complete: +percent.toFixed(2)});
+    percent += increment;
 
     fs.readFile(filePath, function(error, file_data){
         if(!error){
@@ -374,7 +386,7 @@ function processTFTP_Data(){
 
     rndis = protocols.make_rndis(etherSize + ipSize + udpSize + tftpSize + blk_size);
     ip = protocols.make_ipv4(server_ip, BB_ip, IPUDP, 0, ipSize + udpSize + tftpSize + blk_size, 0);
-    udp = protocols.make_udp(tftpSize + blk_size, udpSPL.udpDest, udpSPL.udpSrc);
+    udp = protocols.make_udp(tftpSize + blk_size, udpTFTP.udpDest, udpTFTP.udpSrc);
     tftp = protocols.make_tftp(3, i);
     i++;
     return Buffer.concat([rndis, eth2, ip, udp, tftp, blk_data], rndisSize + etherSize + ipSize + udpSize + tftpSize + blk_size);
