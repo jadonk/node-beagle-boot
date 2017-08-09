@@ -1,4 +1,8 @@
 var BB = require('./main');
+var fs = require('fs');
+
+var umsMountPoint = '/Volumes';
+var umsVolume = '/BOOT';
 
 var emitter = BB.tftpServer([
     {vid: 0x0451, pid: 0x6141, file_path: './bin/spl'}, // ROM
@@ -22,6 +26,26 @@ emitter.on('error', function(error){
 
 emitter.on('connect', function(device){
     console.log("Detected " +device);
-    if(device == "UMS") console.log("Ready");
 });
 
+fs.watch(umsMountPoint, {recursive: true}, onMountChange);
+
+function onMountChange(eventType, filename) {
+    console.log(eventType + ' ' + filename);
+    umsVolume = '/' + filename;
+    if(eventType == 'rename') doReadback();
+}
+
+function doReadback() {
+    try {
+        var envTxt = umsMountPoint+umsVolume+'/env.txt';
+        var env = fs.readFileSync(envTxt, 'utf8');
+        console.log('env = ' + env);
+
+        var eepromBin = umsMountPoint+umsVolume+'/eeprom.bin';
+        var eeprom = fs.readFileSync(eepromBin);
+        console.log('eeprom = ' + eeprom);
+    } catch(ex) {
+        //console.log(envTxt + ' unavailable');
+    }
+}

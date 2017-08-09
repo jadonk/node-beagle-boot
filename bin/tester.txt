@@ -1,2 +1,4 @@
-bootcmd=gpio clear 53;gpio clear 54;gpio set 55;gpio set 56;ums 0 mmc 0
+bootcmd=gpio set 53;run cpenv;run cpeeprom;gpio clear 53;gpio clear 54;gpio set 55;gpio set 56;ums 0 mmc 0
 bootdelay=0
+cpenv=env export -t 82000000;fatwrite mmc 0:1 82000000 env.txt ${filesize}
+cpeeprom=eeprom read 0 50 82000000 0 40;fatwrite mmc 0:1 82000000 eeprom.bin 40
