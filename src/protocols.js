@@ -221,6 +221,11 @@ var bootp = new Parser()
         length: 64
     });
 
+// TFTP packet
+var tftp_Xrq = new Parser()
+    .uint16('opcode')
+    .string('filename')
+    .string('mode');
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////// Packet make functions /////////////////////////////////////////////////
@@ -430,6 +435,11 @@ function parse_bootp(buf){
     return bootp.parse(buf);
 }
 
+// Parse tftp RRQ/WRQ packets
+function parse_tftp(buf){
+    return tftp_Xrq.parse(buf);
+}
+
 
 ///////////////////////////////////////// Function to remove extra byte from last /////////////////////////////////
 function fix_buff(buf){
@@ -450,3 +460,4 @@ exports.make_arp = make_arp;
 exports.parse_udp = parse_udp;
 exports.make_tftp = make_tftp;
 exports.parse_bootp = parse_bootp;
+exports.parse_tftp = parse_tftp;
