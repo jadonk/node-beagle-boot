@@ -49,41 +49,45 @@ var udpTFTP;    // TFTP UDP source and destination ports
 
 // TFTP server for USB Mass Storage
 exports.usbMassStorage = function(){
-    return exports.tftpServer([
-        {vid: ROMVID, pid: ROMPID, file_path: path.join(__dirname, 'bin', 'spl')},
-        {vid: SPLVID, pid: SPLPID, file_path: path.join(__dirname, 'bin', 'uboot')}
-    ]);
+    exports.AddTftpServer(
+        {vid: ROMVID, pid: ROMPID, file_path: path.join(__dirname, 'bin', 'spl')});
+    exports.AddTftpServer(
+        {vid: SPLVID, pid: SPLPID, file_path: path.join(__dirname, 'bin', 'uboot')});
+    return emitterMod;
 };
 
+exports.connect = function(){
+   return emitterMod;
+};
 
 // TFTP server for any file transfer
-exports.tftpServer = function(transferFiles){
+exports.addTftpServer = function(newTransferFile){
 
     var foundDevice;
     increment = (100 / (transferFiles.length * 10));
-    usb.on('attach', function(device){
+    usb.on('attach', exports.probeDevices);
+};
 
-        switch(device){
-            case usb.findByIds(ROMVID, ROMPID): foundDevice = 'ROM';
-            break;
-
-            case usb.findByIds(SPLVID, SPLPID): foundDevice = 'SPL';
-            break;
-
-            case usb.findByIds(UBOOTVID, UBOOTPID): foundDevice = 'UBOOT';
-            break;
-
-            case usb.findByIds(UMSVID, UMSPID): foundDevice = 'UMS';
-            break;
-
-            default: foundDevice = 'Device '+device.deviceDescriptor;
+exports.probeDevices = function(device){
+    var foundDevice = null;
+    if(usb.findByIds(ROMVID, ROMPID)) {
+       foundDevice = 'ROM';
+    } else if(usb.findByIds(SPLVID, SPLPID)) {
+       foundDevice = 'SPL';
+    } else if(usb.findByIds(UBOOTVID, UBOOTPID)) {
+       foundDevice = 'UBOOT';
+    } else if(usb.findByIds(UMSVID, UMSPID)) {
+       foundDevice = 'UMS';
+    } else if(device) {
+       foundDevice = 'Device '+device.deviceDescriptor;
 /*
                 device.deviceDescriptor.idVendor.toString(16)+':'+
                 device.deviceDescriptor.idProduct.toString(16);
 */
-        }
+    }
 
-        emitterMod.emit('connect', foundDevice);
+    if(foundDevice) emitterMod.emit('connect', foundDevice);
+};
 
         // Transfer files
         transferFiles.forEach(function(entry){
