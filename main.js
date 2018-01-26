@@ -89,6 +89,7 @@ exports.probeDevices = function(device){
     if(foundDevice) emitterMod.emit('connect', foundDevice);
 };
 
+function dunno() {
         // Transfer files
         transferFiles.forEach(function(entry){
 
@@ -97,14 +98,14 @@ exports.probeDevices = function(device){
                 setTimeout(()=>{transfer(entry.file_path, device, foundDevice);}, timeout);
             }   
         });
-    });
+    //});
 
     usb.on('detach', function(device){
 
         emitterMod.emit('disconnect', foundDevice);
     });
 
-    return emitterMod;  // Event Emitter for progress
+   return emitterMod;  // Event Emitter for progress
 };
 
 
