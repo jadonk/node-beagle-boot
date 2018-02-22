@@ -126,7 +126,7 @@ function transfer(filePath, device, foundDevice){
 
     if(!windows){                // Not supported in Windows
         // Detach Kernel Driver
-        if(interface.isKernelDriverActive()){
+        if(interface && interface.isKernelDriverActive()){
             interface.detachKernelDriver();
         }
     }
