@@ -40,7 +40,7 @@ const platform = os.platform();
 const rndis_win = require('./src/rndis_win');
 var inEndpoint, outEndpoint, Data, ether, rndis, eth2, ip, udp, bootreply, increment;
 const emitterMod = new EventEmitter();    // Emitter for module status
-var percent;    // Percentage for progress
+var percent = 0;    // Percentage for progress
 var description;    // Description for current status
 var udpTFTP;    // TFTP UDP source and destination ports
 

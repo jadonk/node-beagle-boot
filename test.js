@@ -7,7 +7,7 @@ var umsVolume = '/BOOT';
 var emitter = BB.tftpServer([
     {vid: 0x0451, pid: 0x6141, file_path: './bin/spl'}, // ROM
     {vid: 0x0451, pid: 0xd022, file_path: './bin/uboot'}, // SPL
-    //{vid: 0x0525, pid: 0xa4a2, file_path: './bin/uboot'}, // SPL
+    {vid: 0x0525, pid: 0xa4a2, file_path: './bin/uboot'}, // SPL
 ]);
 
 console.log('USB tester and EEPROM writer started');
