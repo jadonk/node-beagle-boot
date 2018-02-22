@@ -63,6 +63,8 @@ exports.tftpServer = function(transferFiles){
     increment = (100 / (transferFiles.length * 10));
     usb.on('attach', function(device){
 
+        process.stdout.write('!');
+
         switch(device){
             case usb.findByIds(ROMVID, ROMPID): foundDevice = 'ROM';
             break;
@@ -209,6 +211,8 @@ function transfer(filePath, device, foundDevice){
 emitter.on('inTransfer', function(filePath){
 
     inEndpoint.transfer(MAXBUF, function(error, data){
+
+        process.stdout.write(".");
         
         if(!error){           
             var request = identifyRequest(data, path.basename(filePath).length);
@@ -253,6 +257,8 @@ emitter.on('inTransfer', function(filePath){
 emitter.on('outTransfer', function(filePath, data, request){
 
     outEndpoint.transfer(data, function(error){
+
+        process.stdout.write("*");
         
         if(!error){
             if(request == 'BOOTP' || request == 'ARP'){
