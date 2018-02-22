@@ -79,10 +79,6 @@ exports.tftpServer = function(transferFiles){
             break;
 
             default: foundDevice = 'Device '+device.deviceDescriptor;
-/*
-                device.deviceDescriptor.idVendor.toString(16)+':'+
-                device.deviceDescriptor.idProduct.toString(16);
-*/
         }
 
         emitterMod.emit('connect', foundDevice);
@@ -170,7 +166,8 @@ function transfer(filePath, device, foundDevice){
 
         // Sending rndis_init_msg (SEND_ENCAPSULATED_COMMAND)
         device.controlTransfer(bmRequestType_send, 0, 0, 0, rndis_buf, function(error, data){
-            emitterMod.emit('error', "Control transfer error on SEND_ENCAPSULATED " +error);
+            // This error doesn't affect the functionality, so ignoring
+            //if(error) emitterMod.emit('error', "Control transfer error on SEND_ENCAPSULATED " +error);
         });
 
         // Receive rndis_init_cmplt (GET_ENCAPSULATED_RESPONSE)
@@ -184,7 +181,8 @@ function transfer(filePath, device, foundDevice){
 
         // Send rndis_set_msg (SEND_ENCAPSULATED_COMMAND)
         device.controlTransfer(bmRequestType_send, 0, 0, 0, rndis_buf, function(error, data){
-            emitterMod.emit('error', "Control transfer error on SEND_ENCAPSULATED " +error);
+            // This error doesn't affect the functionality, so ignoring
+            //if(error) emitterMod.emit('error', "Control transfer error on SEND_ENCAPSULATED " +error);
         });
 
         // Receive rndis_init_cmplt (GET_ENCAPSULATED_RESPONSE)
@@ -287,6 +285,7 @@ function identifyRequest(buff, len){
     if(val == (0x5f + len) || val == (0x76 + len)) return 'TFTP';
 
     if(val == 0x5a) return 'TFTP_Data';
+    
     return 'notIdentified';
 
 }
