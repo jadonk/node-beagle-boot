@@ -1,7 +1,7 @@
 var BB = require('./main');
 var fs = require('fs');
 
-var umsMountPoint = '/Volumes';
+var umsMountPoint = '/media';
 var umsVolume = '/BOOT';
 
 var emitter = BB.tftpServer([
